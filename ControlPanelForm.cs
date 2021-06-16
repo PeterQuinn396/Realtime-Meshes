@@ -125,10 +125,13 @@ namespace Realtime
             switch (shaderType_ListBox.SelectedIndex)
             {
                 case 0:
-                    window.shaderType = AvailableShaders.DEFAULT;
+                    window.shaderType = AvailableShaders.FLAT;
                     break;
                 case 1:
                     window.shaderType = AvailableShaders.NORMAL;
+                    break;
+                case 2:
+                    window.shaderType = AvailableShaders.POINT_LIGHT;
                     break;
                 default:
                     break;
@@ -138,12 +141,14 @@ namespace Realtime
         }
 
         float last_explode_val = 0;
-        private void explode_bar_Scroll(object sender, EventArgs e)
+        private void trackBar1_Scroll(object sender, EventArgs e)
         {
-            float delta =  explode_bar.Value-last_explode_val;
-            last_explode_val = explode_bar.Value;
+            float delta = explodeBar.Value - last_explode_val;
+            last_explode_val = explodeBar.Value;
             simulation.mesh.Explode(delta / 10.0f);
         }
+
+       
     }
 
 

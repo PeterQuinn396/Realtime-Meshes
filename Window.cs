@@ -18,7 +18,7 @@ namespace Realtime
 
         // buffer hadnles
 
-        int ElementBufferObject;
+        
         int VertexBufferObject;
         int VertexArrayObject;
         int NormalBufferObject;
@@ -28,11 +28,12 @@ namespace Realtime
         int modelUniform;
         int projectionUniform;
         int colorUniform;
+        int camPosUniform;
 
         // control variables
         public bool draw_wireframe = false;
         public Vector3 object_color;
-        public AvailableShaders shaderType = AvailableShaders.DEFAULT;
+        public AvailableShaders shaderType = AvailableShaders.FLAT;
         public bool shader_changed = true;
 
 
@@ -121,7 +122,7 @@ namespace Realtime
             GL.ClearColor(.2f, .3f, .3f, 1.0f);
 
             BindArrays();
-            shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
+            shader = new Shader("shaders/flat.vs", "shaders/flat.fs");
             shader.Use();
 
             // get uniforms
@@ -129,6 +130,7 @@ namespace Realtime
             viewUniform = GL.GetUniformLocation(shader.GetHandle(), "view");
             projectionUniform = GL.GetUniformLocation(shader.GetHandle(), "projection");
             colorUniform = GL.GetUniformLocation(shader.GetHandle(), "color");
+            camPosUniform = GL.GetUniformLocation(shader.GetHandle(), "camPos");
 
             GL.Enable(EnableCap.DepthTest);
             stopwatch = new Stopwatch();
@@ -147,11 +149,7 @@ namespace Realtime
                 simulation.mesh.GetVerticesArray(), BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-
-            //ElementBufferObject = GL.GenBuffer();
-            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            //GL.BufferData(BufferTarget.ElementArrayBuffer, simulation.mesh.GetFacesArray().Length * sizeof(uint), 
-            //    simulation.mesh.GetFacesArray(), BufferUsageHint.StaticDraw);
+                       
 
             NormalBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, NormalBufferObject);
@@ -159,9 +157,6 @@ namespace Realtime
                 simulation.mesh.GetVertexNormalsArray(), BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(1);
-
-            
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
         }
 
@@ -180,11 +175,14 @@ namespace Realtime
                 shader.Dispose();
                 switch (shaderType)
                 {                    
-                    case AvailableShaders.DEFAULT:
-                        shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
+                    case AvailableShaders.FLAT:
+                        shader = new Shader("shaders/flat.vs", "shaders/flat.fs");
                         break;
                     case AvailableShaders.NORMAL:
                         shader = new Shader("shaders/normal.vs", "shaders/normal.fs");
+                        break;
+                    case AvailableShaders.POINT_LIGHT:
+                        shader = new Shader("shaders/point_light.vs", "shaders/point_light.fs");
                         break;
                     default:
                         break;
@@ -196,6 +194,7 @@ namespace Realtime
                 viewUniform = GL.GetUniformLocation(shader.GetHandle(), "view");
                 projectionUniform = GL.GetUniformLocation(shader.GetHandle(), "projection");
                 colorUniform = GL.GetUniformLocation(shader.GetHandle(), "color");
+                camPosUniform = GL.GetUniformLocation(shader.GetHandle(), "camPos");
 
                 shader_changed = false;
             }
@@ -213,6 +212,8 @@ namespace Realtime
             GL.UniformMatrix4(projectionUniform, false, ref projection);
 
             GL.Uniform3(colorUniform, object_color);
+
+            GL.Uniform3(camPosUniform, simulation.camera.Eye);
                      
             if (draw_wireframe)
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
@@ -221,6 +222,7 @@ namespace Realtime
 
             GL.BindVertexArray(VertexArrayObject);
             GL.DrawArrays(PrimitiveType.Triangles, 0, simulation.mesh.GetVerticesArray().Length);
+            GL.BindVertexArray(0);
 
             // GL.DrawElements(PrimitiveType.Triangles, simulation.mesh.GetFacesArray().Length, DrawElementsType.UnsignedInt, 0);
             Context.SwapBuffers();

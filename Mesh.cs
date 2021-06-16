@@ -33,7 +33,7 @@ namespace Realtime
         public void LoadMesh(string filename)
         {
            
-            update_buffers = true;
+            
             System.IO.StreamReader f = new System.IO.StreamReader(filename);
             string line;
             int v_counter = 0;
@@ -185,44 +185,49 @@ namespace Realtime
                 face_objects.Add(face);
             }
             UpdateArraysFromFaces();
+           
         }
 
         public void Explode(float s)
         {
             System.Diagnostics.Debug.Print("Explode: " + s);
-            update_buffers = true;
+           
 
             for (int i = 0; i < face_objects.Count; i++)
             {
                 Face f = face_objects[i];
                 Vector3 n = f.getNormal();
                 n = Vector3.Multiply(n,s);
-                f.V1.Position += n;
-                f.V2.Position += n;
-                f.V3.Position += n;
+                f.translate(n);
             }
              UpdateArraysFromFaces();
+
+            
         }
 
         private void UpdateArraysFromFaces()
         {
             List<float> final_vertices_array = new List<float>();
             List<float> final_vn_array = new List<float>();
+            Vector3 v;
             for (int i = 0; i < face_objects.Count; i++)
             {
                 Face face = face_objects[i];
                 // vertex pos array
-                final_vertices_array.Add(face.V1.Position.X);
-                final_vertices_array.Add(face.V1.Position.Y);
-                final_vertices_array.Add(face.V1.Position.Z);
+                v = face.V1.Position + face.Translation;
+                final_vertices_array.Add(v.X);
+                final_vertices_array.Add(v.Y);
+                final_vertices_array.Add(v.Z);
 
-                final_vertices_array.Add(face.V2.Position.X);
-                final_vertices_array.Add(face.V2.Position.Y);
-                final_vertices_array.Add(face.V2.Position.Z);
+                v = face.V2.Position + face.Translation;
+                final_vertices_array.Add(v.X);
+                final_vertices_array.Add(v.Y);
+                final_vertices_array.Add(v.Z);
 
-                final_vertices_array.Add(face.V3.Position.X);
-                final_vertices_array.Add(face.V3.Position.Y);
-                final_vertices_array.Add(face.V3.Position.Z);
+                v = face.V3.Position + face.Translation;
+                final_vertices_array.Add(v.X);
+                final_vertices_array.Add(v.Y);
+                final_vertices_array.Add(v.Z);
 
 
                 if (face.V1.Normal == Vector3.Zero) // no vn provided in obj, use face normal
@@ -248,6 +253,8 @@ namespace Realtime
 
             vertices_array = final_vertices_array.ToArray();
             vertex_normals_array = final_vn_array.ToArray();
+
+            update_buffers = true;
 
         }
 
@@ -317,22 +324,35 @@ namespace Realtime
         Vertex v2;
         Vertex v3;
 
+        Vector3 translation;
+        Matrix3 rotation;
+        float scale;
+
         public Face(Vertex v1, Vertex v2, Vertex v3) 
         {
             this.v1 = v1;
             this.v2 = v2;
             this.v3 = v3;
+
+            this.translation = Vector3.Zero;
+            this.rotation = Matrix3.Identity;
         }
 
         public Vertex V1 { get => v1; set => v1 = value; }
         public Vertex V2 { get => v2; set => v2 = value; }
         public Vertex V3 { get => v3; set => v3 = value; }
+        public Vector3 Translation { get => translation; set => translation = value; }
 
         public Vector3 getNormal()
         {
             Vector3 e1 = v2.Position - v1.Position;
             Vector3 e2 = v3.Position - v1.Position;
             return Vector3.Cross(e1, e2).Normalized();
+        }
+
+        public void translate(Vector3 v)
+        {
+            this.translation += v;
         }
     }
 }
