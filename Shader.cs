@@ -9,8 +9,9 @@ namespace Realtime
 
     public enum AvailableShaders
     {
-        DEFAULT,
+        FLAT,
         NORMAL,
+        POINT_LIGHT
 
     }
     public class Shader
