@@ -149,7 +149,6 @@ namespace Realtime
                 vertices_array[3 * i] = (vertices_array[3 * i] - x_ave) / scale;
                 vertices_array[3 * i + 1] = (vertices_array[3 * i + 1] - y_ave) / scale;
                 vertices_array[3 * i + 2] = (vertices_array[3 * i + 2] - z_ave) / scale;
-
             }
 
            
@@ -185,14 +184,11 @@ namespace Realtime
                 face_objects.Add(face);
             }
             UpdateArraysFromFaces();
-           
         }
 
         public void Explode(float s)
         {
-            System.Diagnostics.Debug.Print("Explode: " + s);
-           
-
+            //System.Diagnostics.Debug.Print("Explode: " + s);
             for (int i = 0; i < face_objects.Count; i++)
             {
                 Face f = face_objects[i];
@@ -200,9 +196,7 @@ namespace Realtime
                 n = Vector3.Multiply(n,s);
                 f.translate(n);
             }
-             UpdateArraysFromFaces();
-
-            
+             UpdateArraysFromFaces();            
         }
 
         private void UpdateArraysFromFaces()
